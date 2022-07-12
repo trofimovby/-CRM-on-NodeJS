@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require ('body-parser')
 const mongoose = require('mongoose')
+const passport = require('passport')
 const authRoutes = require('./routes/auth')
 const analyticsRoutes = require('./routes/analytics')
 const categoryRoutes = require('./routes/category')
@@ -15,7 +16,8 @@ mongoose.connect(MongoDB_URI)
     .then(() =>  console.log('Connected'))
     .catch(error => console.log(error))
 
-
+app.use(passport.initialize())
+require('./middleware/passport')(passport)
 
 
 app.use(require('morgan')('dev'))

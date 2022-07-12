@@ -1,12 +1,35 @@
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const keys = require('../config/keys')
 const User = require('../models/User')
+const errorHandler = require('../utils/errorHandler')
 
-module.exports.login = function (req,res){
-    res.status(200).json({
-        login: {
-            email: req.body.email,
-            password: req.body.password
+module.exports.login = async function (req,res){
+    const candidate = await User.findOne({email: req.body.email})
+    if(candidate){
+        //Проверка пользователя, пользоватеь существует
+        const passwordResult = bcrypt.compareSync(req.body.password, candidate.password)
+        if (passwordResult) {
+            //Generate token, pass=pass
+            const token = jwt.sign({
+                email: candidate.email,
+                userId: candidate._id
+            }, keys.jwt,{expiresIn: 60*60})
+            res.status(200).json({
+                token: `Bearer ${token}`
+            })
+        } else {
+            res.status(401).json({
+                message: 'Пароль неправильный'
+            })
         }
-    })
+    } else {
+        //Not user - error
+        res.status(404).json({
+            message: 'User with this email not found!'
+        })
+    }
+
 }
 
 
@@ -19,9 +42,25 @@ module.exports.register = async function (req, res){
             message: 'Такая почта уже занята :( '
         })
     } else {
-        //создаем пользователя
-    }
+        const salt = bcrypt.genSaltSync(10)
+        const password = req.body.password
+        const user = new User ({
+           email: req.body.email,
+           password: bcrypt.hashSync(password, salt)
+       })
+        try{
+            await user.save()
+            res.status(201).json(user)//200-ok, 201-created
+        }
+        catch (e){
+           //обработка еррор
+            errorHandler(res,e)
 
+        }
+
+
+
+    }
 }
 
 
