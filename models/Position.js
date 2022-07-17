@@ -1,24 +1,23 @@
-const mongoose = require ('mongoose')
+const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const positionSchema = new Schema({
-     name: {
-         type: String,
-         required: true
-     },
+    name: {
+        type: String,
+        required: true
+    },
     cost: {
         type: Number,
         required: true
     },
-    category:{
-         ref: 'categories',
+    category: {
+        ref: 'categories',
         type: Schema.Types.ObjectId
     },
-    user:{
+    user: {
         ref: 'users',
         type: Schema.Types.ObjectId
     }
-
 })
 
-module.exports = mongoose.Schema.module('positions', positionSchema)
+module.exports = mongoose.model('positions', positionSchema)
